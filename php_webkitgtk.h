@@ -16,10 +16,14 @@ extern zend_module_entry webkitgtk_module_entry;
 // class
 zend_class_entry *ce_WebKitGtkWebView;
 zend_class_entry *ce_WebKitGtkWebFrame;
+zend_class_entry *ce_WebKitGtkWebDataSource;
+zend_class_entry *ce_WebKitGtkWebResource;
 
 
 typedef struct _WebKitWebView_object WebKitWebView_object;
 typedef struct _WebKitWebFrame_object WebKitWebFrame_object;
+typedef struct _WebKitWebDataSource_object WebKitWebDataSource_object;
+typedef struct _WebKitWebResource_object WebKitWebResource_object;
 
 
 typedef struct _WebKitWebView_object {
@@ -35,6 +39,17 @@ typedef struct _WebKitWebFrame_object {
 	HashTable    *props;
 };
 
+typedef struct _WebKitWebDataSource_object {
+	zend_object   std;
+	WebKitWebDataSource *webDataSource;
+	HashTable    *props;
+};
+
+typedef struct _WebKitWebResource_object {
+	zend_object   std;
+	WebKitWebResource *webResource;
+	HashTable    *props;
+};
 
 PHP_MINIT_FUNCTION(webkitgtk);
 

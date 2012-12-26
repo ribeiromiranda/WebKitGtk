@@ -8,8 +8,10 @@
 
 // METHODS
 PHP_METHOD(WebKitGtkWebView, __construct);
-PHP_METHOD(WebKitGtkWebView, open);
+PHP_METHOD(WebKitGtkWebView, getEncoding);
 PHP_METHOD(WebKitGtkWebView, getMainFrame);
+PHP_METHOD(WebKitGtkWebView, open);
+
 
 // METHODS ARGS
 ZEND_BEGIN_ARG_INFO_EX(arginfo_webkitgtkwebview_open, 0, 0, 1)
@@ -19,8 +21,9 @@ ZEND_END_ARG_INFO()
 // METHOD + ARGS
 const zend_function_entry webkitwebview_class_functions[] = {
 	PHP_ME(WebKitGtkWebView, __construct, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(WebKitGtkWebView, open, arginfo_webkitgtkwebview_open, ZEND_ACC_PUBLIC)
+	PHP_ME(WebKitGtkWebView, getEncoding, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(WebKitGtkWebView, getMainFrame, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(WebKitGtkWebView, open, arginfo_webkitgtkwebview_open, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -71,7 +74,7 @@ void webkitgtk_object_free_storage_webview(void *object TSRMLS_DC)
 {
 	WebKitWebView_object *intern = (WebKitWebView_object *)object;
 
-	if (intern->webView) {
+	if (intern->webView && GTK_IS_WIDGET(intern->webView)) {
 		gtk_widget_destroy(intern->webView);
 	}
 
@@ -90,6 +93,29 @@ PHP_METHOD(WebKitGtkWebView, __construct)
 	WebKitWebView_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
 	object->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
 }
+
+PHP_METHOD(WebKitGtkWebView, getEncoding)
+{
+	WebKitWebView_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	gchar *data = webkit_web_view_get_encoding(object->webView);
+	if (data == NULL) {
+		RETURN_NULL();
+	}
+	RETURN_STRING(data, 1);
+}
+
+
+PHP_METHOD(WebKitGtkWebView, getMainFrame) {
+	WebKitWebFrame_object *webFrame;
+
+	WebKitWebView_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	php_webkitgtk_instantiate(ce_WebKitGtkWebFrame, return_value TSRMLS_CC);
+	webFrame = zend_object_store_get_object(return_value TSRMLS_CC);
+	webFrame->webFrame = webkit_web_view_get_main_frame(object->webView);
+
+}
+
 
 PHP_METHOD(WebKitGtkWebView, open)
 {
@@ -145,14 +171,4 @@ static void loadStatusCb(WebKitWebView *web_view, GParamSpec *pspec, void* conte
 		break;
 	}
 	//g_object_thaw_notify(object);
-}
-
-PHP_METHOD(WebKitGtkWebView, getMainFrame) {
-	WebKitWebFrame_object *webFrame;
-
-	WebKitWebView_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
-
-	php_webkitgtk_instantiate(ce_WebKitGtkWebFrame, return_value TSRMLS_CC);
-	webFrame = zend_object_store_get_object(return_value TSRMLS_CC);
-
 }

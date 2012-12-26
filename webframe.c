@@ -69,7 +69,7 @@ void webkitgtk_object_free_storage_webframe(void *object TSRMLS_DC)
 {
 	WebKitWebFrame_object *intern = (WebKitWebFrame_object *)object;
 
-	if (intern->webFrame) {
+	if (intern->webFrame && GTK_IS_WIDGET(intern->webFrame)) {
 		gtk_widget_destroy(intern->webFrame);
 	}
 
@@ -80,18 +80,28 @@ void webkitgtk_object_free_storage_webframe(void *object TSRMLS_DC)
 
 PHP_METHOD(WebKitGtkWebFrame, __construct)
 {
+	// FIXME: Não deixar o client instanciar essa classe
 
+	//zval             *object;
+	//WebKitWebView_object *webView;
+	//php_printf(" inicio instance \n");
+	//if (zend_parse_method_parameters(ZEND_NUM_ARGS() TSRMLS_CC, getThis(), "O", &object, ce_WebKitGtkWebView) == FAILURE) {
+	//	RETURN_FALSE;
+	//}
+	//php_printf(" instance \n");
 	//WebKitWebFrame *mainFrame = webkit_web_view_get_main_frame(object->webFrame);
 	//mainFrame
 }
 
 PHP_METHOD(WebKitGtkWebFrame, getDataSource)
 {
-	//WebKitWebDataSource *dataSource = webkit_web_frame_get_data_source();
-	//php_printf(" saida %s\n", webkit_web_data_source_get_data(dataSource)->str);
+	// FIXME: Verificar se o webview foi realmente inicilizado
 
-	//WebKitWebResource *mainResource = webkit_web_data_source_get_main_resource(dataSource);
-	//if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|bll", &str, &str_len, &assoc, &depth, &options) == FAILURE) {
-	//	return;
-	//}
+	WebKitWebDataSource_object *webDatasource;
+	WebKitWebFrame_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+
+
+	php_webkitgtk_instantiate(ce_WebKitGtkWebDataSource, return_value TSRMLS_CC);
+	webDatasource = zend_object_store_get_object(return_value TSRMLS_CC);
+	webDatasource->webDataSource = webkit_web_frame_get_data_source(object->webFrame);
 }
