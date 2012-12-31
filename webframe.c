@@ -1,9 +1,5 @@
 
-
 #include "php_webkitgtk.h"
-
-
-
 
 
 // PROPERTIES
@@ -11,6 +7,9 @@
 // METHODS
 PHP_METHOD(WebKitGtkWebFrame, __construct);
 PHP_METHOD(WebKitGtkWebFrame, getDataSource);
+PHP_METHOD(WebKitGtkWebFrame, getTitle);
+PHP_METHOD(WebKitGtkWebFrame, getUri);
+PHP_METHOD(WebKitGtkWebFrame, frameReload);
 
 // METHODS ARGS
 
@@ -18,6 +17,8 @@ PHP_METHOD(WebKitGtkWebFrame, getDataSource);
 const zend_function_entry webkitwebframe_class_functions[] = {
 	PHP_ME(WebKitGtkWebFrame, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(WebKitGtkWebFrame, getDataSource, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(WebKitGtkWebFrame, getTitle, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(WebKitGtkWebFrame, frameReload, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -96,12 +97,31 @@ PHP_METHOD(WebKitGtkWebFrame, __construct)
 PHP_METHOD(WebKitGtkWebFrame, getDataSource)
 {
 	// FIXME: Verificar se o webview foi realmente inicilizado
-
 	WebKitWebDataSource_object *webDatasource;
 	WebKitWebFrame_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
 
-
 	php_webkitgtk_instantiate(ce_WebKitGtkWebDataSource, return_value TSRMLS_CC);
 	webDatasource = zend_object_store_get_object(return_value TSRMLS_CC);
+	webDatasource->zWebFrame = getThis();
 	webDatasource->webDataSource = webkit_web_frame_get_data_source(object->webFrame);
+}
+
+PHP_METHOD(WebKitGtkWebFrame, getTitle)
+{
+	WebKitWebFrame_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	gchar *data = webkit_web_frame_get_title(object->webFrame);
+	RETURN_STRING(data, 1);
+}
+
+PHP_METHOD(WebKitGtkWebFrame, getUri)
+{
+	WebKitWebFrame_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	gchar *data = webkit_web_frame_get_uri(object->webFrame);
+	RETURN_STRING(data, 1);
+}
+
+PHP_METHOD(WebKitGtkWebFrame, frameReload)
+{
+	WebKitWebFrame_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	webkit_web_frame_reload(object->webFrame);
 }

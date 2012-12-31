@@ -32,6 +32,6 @@ if test "$PHP_webkitgtk" != "no"; then
 	fi
 
 	AC_DEFINE([HAVE_WEBKITGTK],1 ,[whether to enable WebKitGTK])
-	PHP_NEW_EXTENSION(webkitgtk, webkitgtk.c webview.c webframe.c webdatasource.c webresource.c, $ext_shared)
+	PHP_NEW_EXTENSION(webkitgtk, webkitgtk.c webview.c webframe.c webdatasource.c webresource.c websettings.c networkrequest.c, $ext_shared)
 	PHP_SUBST(WEBKITGTK_SHARED_LIBADD)
 fi

@@ -3,7 +3,6 @@
 #endif
 
 
-
 #include "php_webkitgtk.h"
 
 PHPAPI zval *php_webkitgtk_instantiate(zend_class_entry *pce, zval *object TSRMLS_DC)
@@ -36,17 +35,12 @@ ZEND_GET_MODULE(webkitgtk)
 
 PHP_MINIT_FUNCTION(webkitgtk) {
 
-
 	PHP_MINIT(webview)(INIT_FUNC_ARGS_PASSTHRU);
 	PHP_MINIT(webframe)(INIT_FUNC_ARGS_PASSTHRU);
 	PHP_MINIT(webdatasource)(INIT_FUNC_ARGS_PASSTHRU);
 	PHP_MINIT(webresource)(INIT_FUNC_ARGS_PASSTHRU);
-
-
+	PHP_MINIT(websettings)(INIT_FUNC_ARGS_PASSTHRU);
+	PHP_MINIT(networkrequest)(INIT_FUNC_ARGS_PASSTHRU);
 
 	return SUCCESS;
 }
-
-
-
-

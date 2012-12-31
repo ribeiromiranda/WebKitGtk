@@ -126,11 +126,22 @@ PHP_METHOD(WebKitGtkWebDataSource, getInitialRequest)
 PHP_METHOD(WebKitGtkWebDataSource, getMainResource)
 {
 	WebKitWebDataSource_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	WebKitWebResource *resource = webkit_web_data_source_get_main_resource(object->webDataSource);
+
+	php_webkitgtk_instantiate(ce_WebKitGtkWebResource, return_value TSRMLS_CC);
+	WebKitWebResource_object *webResource = zend_object_store_get_object(return_value TSRMLS_CC);
+	webResource->webResource = resource;
 }
 
 PHP_METHOD(WebKitGtkWebDataSource, getRequest)
 {
+	WebKitNetworkRequest_object *networkRequest;
+
 	WebKitWebDataSource_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+
+	php_webkitgtk_instantiate(ce_WebKitGtkNetworkRequest, return_value TSRMLS_CC);
+	networkRequest = zend_object_store_get_object(return_value TSRMLS_CC);
+	networkRequest->networkRequest = webkit_web_data_source_get_request(object->webDataSource);
 }
 
 PHP_METHOD(WebKitGtkWebDataSource, getSubResources)
@@ -170,10 +181,25 @@ PHP_METHOD(WebKitGtkWebDataSource, getUnreachableUri)
 
 PHP_METHOD(WebKitGtkWebDataSource, getWebFrame)
 {
-	WebKitWebDataSource_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	WebKitWebDataSource_object *object;
+	WebKitWebFrame *webFrameLocal;
+
+	WebKitWebFrame_object *webFramePHPOrig;
+
+	object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	webFramePHPOrig = zend_object_store_get_object(object->zWebFrame TSRMLS_CC);
+
+	webFrameLocal = webkit_web_data_source_get_web_frame(object->webDataSource);
+
+	if (webFrameLocal == webFramePHPOrig->webFrame) {
+		*return_value = *object->zWebFrame;
+	} else {
+		// FIXME: Não pode ser diferente;
+	}
 }
 
 PHP_METHOD(WebKitGtkWebDataSource, isLoading)
 {
 	WebKitWebDataSource_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	RETURN_BOOL(webkit_web_data_source_is_loading(object->webDataSource));
 }

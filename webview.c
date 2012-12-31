@@ -8,12 +8,43 @@
 
 // METHODS
 PHP_METHOD(WebKitGtkWebView, __construct);
+PHP_METHOD(WebKitGtkWebView, can_copy_clipboard);
+PHP_METHOD(WebKitGtkWebView, can_cut_clipboard);
+PHP_METHOD(WebKitGtkWebView, can_go_back);
+PHP_METHOD(WebKitGtkWebView, can_go_back_or_forward);
+PHP_METHOD(WebKitGtkWebView, can_go_forward);
+PHP_METHOD(WebKitGtkWebView, can_paste_clipboard);
+PHP_METHOD(WebKitGtkWebView, can_redo);
+PHP_METHOD(WebKitGtkWebView, can_show_mime_type);
+PHP_METHOD(WebKitGtkWebView, can_undo);
+PHP_METHOD(WebKitGtkWebView, copy_clipboard);
+PHP_METHOD(WebKitGtkWebView, cut_clipboard);
+PHP_METHOD(WebKitGtkWebView, delete_selection);
+PHP_METHOD(WebKitGtkWebView, executeScript);
+PHP_METHOD(WebKitGtkWebView, get_back_forward_list);
+PHP_METHOD(WebKitGtkWebView, get_copy_target_list);
+PHP_METHOD(WebKitGtkWebView, getCustomEncoding);
+PHP_METHOD(WebKitGtkWebView, get_dom_document);
+PHP_METHOD(WebKitGtkWebView, getEditable);
 PHP_METHOD(WebKitGtkWebView, getEncoding);
+PHP_METHOD(WebKitGtkWebView, get_focused_frame);
+PHP_METHOD(WebKitGtkWebView, getFullContentZoom);
+PHP_METHOD(WebKitGtkWebView, get_hit_test_result);
+PHP_METHOD(WebKitGtkWebView, get_icon_pixbuf);
+PHP_METHOD(WebKitGtkWebView, get_icon_uri);
+PHP_METHOD(WebKitGtkWebView, get_inspector);
 PHP_METHOD(WebKitGtkWebView, getMainFrame);
 PHP_METHOD(WebKitGtkWebView, open);
 
 
+
+
+
+
 // METHODS ARGS
+ZEND_BEGIN_ARG_INFO_EX(arginfo_webkitgtkwebview_execute_script, 0, 0, 1)
+	ZEND_ARG_INFO(0, string)
+ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_webkitgtkwebview_open, 0, 0, 1)
 	ZEND_ARG_INFO(0, string)
 ZEND_END_ARG_INFO()
@@ -21,7 +52,11 @@ ZEND_END_ARG_INFO()
 // METHOD + ARGS
 const zend_function_entry webkitwebview_class_functions[] = {
 	PHP_ME(WebKitGtkWebView, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(WebKitGtkWebView, executeScript, arginfo_webkitgtkwebview_execute_script, ZEND_ACC_PUBLIC)
+	PHP_ME(WebKitGtkWebView, getCustomEncoding, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(WebKitGtkWebView, getEditable, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(WebKitGtkWebView, getEncoding, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(WebKitGtkWebView, getFullContentZoom, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(WebKitGtkWebView, getMainFrame, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(WebKitGtkWebView, open, arginfo_webkitgtkwebview_open, ZEND_ACC_PUBLIC)
 	PHP_FE_END
@@ -82,7 +117,6 @@ void webkitgtk_object_free_storage_webview(void *object TSRMLS_DC)
 	efree(object);
 }
 
-
 PHP_METHOD(WebKitGtkWebView, __construct)
 {
 	// Initialize GTK+
@@ -94,6 +128,34 @@ PHP_METHOD(WebKitGtkWebView, __construct)
 	object->webView = WEBKIT_WEB_VIEW(webkit_web_view_new());
 }
 
+PHP_METHOD(WebKitGtkWebView, executeScript)
+{
+	char *script;
+	int *script_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &script, &script_len) == FAILURE) {
+		RETURN_FALSE;
+	}
+	WebKitWebView_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	gchar *data = webkit_web_view_get_encoding(object->webView);
+
+	webkit_web_view_execute_script(object->webView, script);
+}
+
+PHP_METHOD(WebKitGtkWebView, getCustomEncoding)
+{
+	WebKitWebView_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	gchar *data = webkit_web_view_get_custom_encoding(object->webView);
+	RETURN_STRING(data, 1);
+}
+
+PHP_METHOD(WebKitGtkWebView, getEditable)
+{
+	WebKitWebView_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	RETURN_BOOL(webkit_web_view_get_editable(object->webView));
+}
+
+
 PHP_METHOD(WebKitGtkWebView, getEncoding)
 {
 	WebKitWebView_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
@@ -104,6 +166,11 @@ PHP_METHOD(WebKitGtkWebView, getEncoding)
 	RETURN_STRING(data, 1);
 }
 
+PHP_METHOD(WebKitGtkWebView, getFullContentZoom)
+{
+	WebKitWebView_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
+	RETURN_BOOL(webkit_web_view_get_full_content_zoom(object->webView));
+}
 
 PHP_METHOD(WebKitGtkWebView, getMainFrame) {
 	WebKitWebFrame_object *webFrame;
@@ -113,19 +180,22 @@ PHP_METHOD(WebKitGtkWebView, getMainFrame) {
 	php_webkitgtk_instantiate(ce_WebKitGtkWebFrame, return_value TSRMLS_CC);
 	webFrame = zend_object_store_get_object(return_value TSRMLS_CC);
 	webFrame->webFrame = webkit_web_view_get_main_frame(object->webView);
-
 }
 
 
 PHP_METHOD(WebKitGtkWebView, open)
 {
-	//if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|bll", &str, &str_len, &assoc, &depth, &options) == FAILURE) {
-	//	return;
-	//}
+	char *uri;
+	int *uri_len;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &uri, &uri_len) == FAILURE) {
+		RETURN_FALSE;
+	}
+
 	WebKitWebView_object *object = zend_object_store_get_object(getThis() TSRMLS_CC);
-	webkit_web_view_open(object->webView, "http://google.com.br");
+	webkit_web_view_open(object->webView, uri);
 	g_signal_connect(object->webView, "notify::load-status", G_CALLBACK(loadStatusCb), object);
-	//php_printf(" open \n");
+
 	gtk_main();
 
 	RETURN_BOOL(object->success);
